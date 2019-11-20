@@ -1,4 +1,10 @@
 # Shopping-API
+<h3> O que é? </h3>
+<ul>
+  <li> Exemplificação de uma API de um Shopping de lojas. </li>
+  <li> Onde o Shopping possue lojas, essas lojas possuem funcionarios e produtos. </li>
+  <li> Clientes cadastrados poderão realizar compras nas lojas. As compras serão registradas por um funcionario da loja. </li>
+</ul>
 
 <h3> Requisitos </h3>
 <ul>
