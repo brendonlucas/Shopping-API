@@ -1,7 +1,11 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+from loja.models import Cliente
+from loja.serializers import *
 from usuario.models import Funcionario
 from usuario.serializers import *
 
@@ -55,4 +59,32 @@ def funcionarios_list(request, id_loja):
             return Response(request.data, status=status.HTTP_201_CREATED)
 
 
+class ApiRoot(generics.GenericAPIView):
+    name = 'api-root'
 
+    def get(self, request, *args, **kwargs):
+        return Response({
+            'info': reverse('list_lojas', request=request),
+
+        }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+def clientes_list(request):
+    if request.method == 'GET':
+        clientes = Cliente.objects.all()
+        clientes_serializer = ClienteSerializer(clientes, many=True)
+        return Response(clientes_serializer.data)
+
+    if request.method == 'POST':
+        cliente_serializer = AddClienteSerializer(data=request.data)
+        if cliente_serializer.is_valid():
+            cliente_serializer.save()
+            return Response(request.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def cliente_detalhes(request,id_cliente):
+    return Response(status=status.HTTP_200_OK)
