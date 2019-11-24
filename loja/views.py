@@ -72,18 +72,23 @@ def produto_compra(request, id_loja, id_produto):
         return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'POST':
-        try:
-            cliente = Cliente.objects.get(cpf=request.data['cliente']['cpf'])
-            if cliente.name != request.data['cliente']['name']:
-                return Response({'erro': "Name Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
-        except Cliente.DoesNotExist:
-            return Response({'erro': "Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+        dados_serializer = VerifyCompraSerializer(data=request.data)
+        if dados_serializer.is_valid():
+            try:
+                cliente = Cliente.objects.get(cpf=request.data['cliente']['cpf'])
+                if cliente.name != request.data['cliente']['name']:
+                    return Response({'erro': "Name Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+            except Cliente.DoesNotExist:
+                return Response({'erro': "Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-        valor_total = produto.valor * request.data['quantidade']
-        c = Compra(cliente=cliente, produto=Produto.objects.get(id=1), loja=loja, quantidade=request.data['quantidade'],
-                   valor_total=valor_total)
-        compra_serializer = AddCompraSerializer(c)
-        return Response(compra_serializer.data, status=status.HTTP_201_CREATED)
+            print('vaklidou')
+            valor_total = produto.valor * request.data['quantidade']
+            c = Compra(cliente=cliente, produto=Produto.objects.get(id=1), loja=loja, quantidade=request.data['quantidade'],
+                           valor_total=valor_total)
+            compra_serializer = AddCompraSerializer(c)
+            return Response(compra_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

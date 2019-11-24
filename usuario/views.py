@@ -72,9 +72,12 @@ class ApiRoot(generics.GenericAPIView):
 @api_view(['GET', 'POST'])
 def clientes_list(request):
     if request.method == 'GET':
-        clientes = Cliente.objects.all()
-        clientes_serializer = ClienteSerializer(clientes, many=True)
-        return Response(clientes_serializer.data)
+        if request.user.is_authenticated:
+            clientes = Cliente.objects.all()
+            clientes_serializer = ClienteSerializer(clientes, many=True)
+            return Response(clientes_serializer.data)
+        else:
+            return Response({'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == 'POST':
         cliente_serializer = AddClienteSerializer(data=request.data)

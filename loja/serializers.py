@@ -71,6 +71,13 @@ class AddCompraSerializer(serializers.ModelSerializer):
 }
 """
 
+class VerifyCompraSerializer(serializers.ModelSerializer):
+    cliente = CompraClienteSerializer()
+
+    class Meta:
+        model = Compra
+        fields = ('cliente', 'quantidade')
+
 
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
