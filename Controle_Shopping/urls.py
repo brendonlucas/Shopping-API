@@ -1,4 +1,4 @@
-import oauth2_provider
+import rest_framework
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import url
@@ -12,5 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     url('', include('usuario.urls')),
     url('', include('loja.urls')),
-    url(r'', schema_view),
+    url(r'docs', schema_view),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+
 ]

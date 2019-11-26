@@ -8,7 +8,8 @@ urlpatterns = [
     # path('root', ApiRoot.as_view(), name=ApiRoot.name),
     # path('lojas/<int:id_loja>/funcionarios', views.funcionarios_list, name='list_loja_funcionarios'),
     path('lojas/<int:id_loja>/funcionarios/', LojaFuncionariosList.as_view(), name='list_loja_funcionarios'),
-    path('lojas/<int:id_loja>/funcionarios/<int:id_funcionario/>', LojaFuncionarioDetalhes.as_view(), name='Detalhe_loja_funcionario'),
+    path('lojas/<int:id_loja>/funcionarios/<int:id_funcionario>/', LojaFuncionarioDetalhes.as_view(),
+         name='Detalhe_loja_funcionario'),
 
     path('admin/funcionarios/', FuncionariosList.as_view(), name='list_funcionarios'),
     path('admin/funcionarios/<int:id_funcionario>/', FuncionariosDetalhes.as_view(), name='Detalhes_funcionarios'),

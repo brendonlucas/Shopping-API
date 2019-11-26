@@ -53,13 +53,23 @@ class LojaDetalhes(generics.GenericAPIView):
         return Response(lojas_serializer.data)
 
     def put(self, request, id_loja, *args, **kwargs):
-        if request.user.is_authenticated:
+        try:
             loja = Loja.objects.get(id=id_loja)
+        except Loja.DoesNotExist:
+            return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.is_authenticated:
             funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
             if funcionario.loja == loja and funcionario.cargo == 'Chefe' or request.user.is_staff:
                 lojas_serializer = LojasSerializer(loja)
-                # faz a atualização
-                return Response(request.data, status=status.HTTP_200_OK)
+                if lojas_serializer.is_valid():
+                    loja.name = request.data['name']
+                    loja.local = request.data['local']
+                    loja.cnpj = request.data['cnpj']
+                    loja.save()
+                    return Response(request.data, status=status.HTTP_200_OK)
+                else:
+                    return Response({'erro': 'Json invalid'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -70,8 +80,7 @@ class LojaDetalhes(generics.GenericAPIView):
             loja = Loja.objects.get(id=id_loja)
             funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
             if funcionario.loja == loja and funcionario.cargo == 'Chefe' or request.user.is_staff:
-                lojas_serializer = LojasSerializer(loja)
-                # faz a deletação
+                loja.delete()
                 return Response({'info': 'Item has be deleted'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -162,8 +171,10 @@ class ProdutoDetalhes(generics.GenericAPIView):
             if funcionario.loja == loja:
                 produto_serializer = ProdutoSerializer(data=request.data)
                 if produto_serializer.is_valid():
-                    # fazer o update
-                    pass
+                    produto.name = request.data['name']
+                    produto.valor = request.data['valor']
+                    produto.quantidade = request.data['quantidade']
+                    produto.save()
                     return Response(request.data, status=status.HTTP_200_OK)
                 else:
                     return Response({'erro': 'HTTP_400_BAD_REQUEST / Json is not valid'},
@@ -187,9 +198,7 @@ class ProdutoDetalhes(generics.GenericAPIView):
         if request.user.is_authenticated:
             funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
             if funcionario.loja == loja:
-                produto_serializer = ProdutoSerializer(data=request.data)
-                # fazer o delete
-                pass
+                produto.delete()
                 return Response({'info': 'Item has be deleted'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -244,7 +253,7 @@ class VendaLoja(generics.GenericAPIView):
     queryset = Compra.objects.all()
     serializer_class = VendasSerializer
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ['valor_total', 'id']
+    ordering_fields = ['valor_total', 'id','cliente__name']
 
     # filterset_fields = ['name', 'local']
 
@@ -270,16 +279,3 @@ class VendaLoja(generics.GenericAPIView):
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-"""
-class P(generics.GenericAPIView):
-    queryset = Produto.objects.all()
-    serializer_class = ProdutoSerializer
-
-    def get(self, request, id_loja, *args, **kwargs):
-        pass
-
-    def post(self, request, id_loja, *args, **kwargs):
-        pass
-"""
