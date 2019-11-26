@@ -13,5 +13,4 @@ urlpatterns = [
     url('', include('usuario.urls')),
     url('', include('loja.urls')),
     url(r'', schema_view),
-    url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
