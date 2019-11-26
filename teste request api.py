@@ -7,9 +7,10 @@ def main():
     key_refresh = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTU3NDcxNDU1OSwianRpI" \
                   "joiY2EwYmEzY2VjNWRlNDQwZGI3ZmI0YzBjNGEzMzJkNTYiLCJ1c2VyX2lkIjoxfQ.fUyTPJMhiFzOHyNLUe82RMmm-fSNv" \
                   "scS9N4enSG4yuE"
-    consulta()
+    # consulta()
     # refresh_key(key_refresh)
     # get_key("brendon", "123456789")
+    get_key_2()
     print()
 
 
@@ -46,6 +47,16 @@ def get_key(username, password):
     print("Key de acesso: ", r.json()['access'])
     print("Key de atualização: ", r.json()['refresh'])
 
+
+def get_key_2():
+    url = 'http://127.0.0.1:8000/o/token/'
+    body = {
+        "username": 'brendon',
+        "password": '123456789'
+    }
+
+    r = requests.post(url, json=body)
+    print(r.json())
 
 if __name__ == '__main__':
     main()

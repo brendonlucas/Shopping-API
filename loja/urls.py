@@ -6,6 +6,7 @@ from loja.views import *
 urlpatterns = [
     # path('lojas/', views.lojas_list, name='list_lojas'),
     path('lojas/', LojasList.as_view(), name='list_lojas'),
+    path('lojas/<int:id_loja>/', LojaDetalhes.as_view(), name='Detalhes_lojas'),
 
     # path('lojas/<int:id_loja>/produtos/', views.produtos_list, name='list_produtos'),
     path('lojas/<int:id_loja>/produtos/', ProdutosList.as_view(), name='list_produtos'),
