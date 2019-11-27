@@ -12,6 +12,9 @@
   <li> Django </li>
   <li> django_rest_framework </li>
   <li> Requests </li>
+  <li> django-rest-swagger </li>
+  <li> djangorestframework_simplejwt </li>
+  <li> django-filter </li>
 </ul>
 
 <h3> Instalando Requisitos</h3>
