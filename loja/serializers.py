@@ -54,11 +54,10 @@ class CompraProdutoSerializer(serializers.ModelSerializer):
 
 class AddCompraSerializer(serializers.ModelSerializer):
     cliente = CompraClienteSerializer()
-    produto = CompraProdutoSerializer()
 
     class Meta:
         model = Compra
-        fields = ('cliente', 'produto', 'quantidade', 'valor_total')
+        fields = ('cliente', 'quantidade')
 
 
 """

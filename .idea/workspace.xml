@@ -3,12 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="f4cd4c7e-acf4-4a44-bb61-5fae476871ca" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Controle_Shopping/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controle_Shopping/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Controle_Shopping/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Controle_Shopping/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loja/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/loja/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usuario/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/usuario/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/usuario/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/usuario/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loja/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/loja/serializers.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
