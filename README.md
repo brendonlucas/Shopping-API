@@ -27,7 +27,8 @@
  <p> OBS: Somente um administrador do sistema poderá adicioniar uma Loja. </p>
     <pre> <code>  {
   "name": "string",
-  "local": "string",
+  "piso": "string",
+  "lote": "string",
   "cnpj": "string"
 }</code> </pre>
   
