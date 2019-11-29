@@ -4,7 +4,8 @@ from django.db import models
 
 class Loja(models.Model):
     name = models.CharField(max_length=255)
-    local = models.CharField(max_length=255)
+    andar = models.CharField(max_length=255)
+    lote = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=255)
 
 
@@ -21,7 +22,7 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=250)
     endereco = models.CharField(max_length=250)
     email = models.CharField(max_length=250)
-    cliente_complement = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cliente_complement')
+    # cliente_complement = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cliente_complement')
 # s = Cliente(name='Lucas',cpf='123456789',telefone='99663322',endereco='rua sem volta',email='lucas123@gmail.com')
 
 

@@ -82,9 +82,8 @@ class LojaFuncionariosList(generics.GenericAPIView):
             except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            loja = Loja.objects.get(id=id_loja)
-            funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario.loja == loja or request.user.is_staff:
+            funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
+            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
                 funcionarios_serializer = AddFuncionarioSerializer(data=request.data)
                 if funcionarios_serializer.is_valid():
                     name = request.data['name']
@@ -128,12 +127,11 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
                     funcionario = funcionarios[id_funcionario - 1]
                 else:
                     return Response({'erro': '404_NOT_FOUND'}, status=status.HTTP_404_NOT_FOUND)
-            except Funcionario.DoesNotExist:
+            except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
             funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario_logado.loja == loja or request.user.is_staff:
-                # funcionario = Funcionario.objects.filter(loja=id_loja)
+            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
                 funcionario_serializer = FuncionarioSerializer(funcionario)
                 return Response(funcionario_serializer.data)
             else:
@@ -150,14 +148,13 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
                     funcionario = funcionarios[id_funcionario - 1]
                 else:
                     return Response({'erro': '404_NOT_FOUND'}, status=status.HTTP_404_NOT_FOUND)
-            except Funcionario.DoesNotExist:
+            except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            loja = Loja.objects.get(id=id_loja)
             funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
             funcionario_serializer = FuncionarioSerializer(data=request.data)
 
-            if funcionario_logado.loja == loja or request.user.is_staff:
+            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
                 if funcionario_serializer.is_valid():
                     funcionario.name = request.data['name']
                     funcionario.cargo = request.data['cargo']
@@ -187,8 +184,9 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
 
             loja = Loja.objects.get(id=id_loja)
             funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario_logado.loja == loja or request.user.is_staff:
-                funcionario.delet()
+            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
+                funcionario_user = User.objects.get(id=funcionario.funcionario_complement.id)
+                funcionario_user.delete()
                 return Response({'Info': 'Item has be deleted'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -198,7 +196,7 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
 
 class ClienteList(generics.ListAPIView):
     queryset = Cliente.objects.all()
-    serializer_class = AddClienteSerializer
+    serializer_class = ClienteSerializer
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, filters.SearchFilter]
     ordering_fields = ['name', 'id']
     filterset_fields = ['name']
@@ -214,7 +212,7 @@ class ClienteList(generics.ListAPIView):
 
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            cliente_serializer = AddClienteSerializer(data=request.data)
+            cliente_serializer = ClienteSerializer(data=request.data)
             if cliente_serializer.is_valid():
                 cliente_serializer.save()
                 return Response(request.data, status=status.HTTP_201_CREATED)
@@ -226,12 +224,15 @@ class ClienteList(generics.ListAPIView):
 
 class ClienteDetalhes(generics.GenericAPIView):
     queryset = Cliente.objects.all()
-    serializer_class = AddClienteSerializer
+    serializer_class = ClienteSerializer
 
     def get(self, request, id_cliente, *args, **kwargs):
         if request.user.is_authenticated:
-            clientes = Cliente.objects.get(id=id_cliente)
-            clientes_serializer = ClienteSerializer(clientes, many=True)
+            try:
+                cliente = Cliente.objects.get(id=id_cliente)
+            except Cliente.DoesNotExist:
+                return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+            clientes_serializer = ClienteSerializer(cliente)
             return Response(clientes_serializer.data)
         else:
             return Response({'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)

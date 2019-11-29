@@ -6,7 +6,7 @@ from loja.models import *
 class LojasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loja
-        fields = ('id', 'name', 'local', 'cnpj')
+        fields = ('id', 'name', 'andar', 'lote', 'cnpj')
 
 
 class ProdutoSerializer(serializers.ModelSerializer):
@@ -81,7 +81,16 @@ class VerifyCompraSerializer(serializers.ModelSerializer):
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cliente
-        fields = ('name', 'cpf', 'telefone', 'endereco',)
+        fields = ('name', 'cpf', 'email', 'telefone', 'endereco',)
+
+    def create(self, validated_data):
+        name = validated_data.get('name')
+        cpf = validated_data.get('cpf')
+        telefone = validated_data.get('telefone')
+        endereco = validated_data.get('endereco')
+        email = validated_data.get('email')
+        Cliente.objects.create(name=name, cpf=cpf, telefone=telefone, endereco=endereco, email=email)
+        return validated_data
 
 
 class VendasSerializer(serializers.ModelSerializer):
@@ -99,26 +108,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'password')
 
 
-class AddClienteSerializer(serializers.ModelSerializer):
-    cliente_complement = UserSerializer()
 
-    class Meta:
-        model = Cliente
-        fields = ('name', 'cpf', 'telefone', 'endereco', 'email', 'cliente_complement')
-
-    def create(self, validated_data):
-        name = validated_data.get('name')
-        cpf = validated_data.get('cpf')
-        telefone = validated_data.get('telefone')
-        endereco = validated_data.get('endereco')
-        email = validated_data.get('email')
-        cliente_complemento = validated_data.get('cliente_complement')
-        username = cliente_complemento['username']
-        password = cliente_complemento['password']
-        user = User.objects.create_user(username=username, password=password, email=email)
-        cliente = Cliente.objects.create(name=name, cpf=cpf, telefone=telefone, endereco=endereco, email=email,
-                                         cliente_complement=user)
-        return validated_data
 
 
 """
