@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework import mixins
 from loja.models import *
@@ -176,12 +177,9 @@ class ProdutoDetalhes(generics.GenericAPIView):
         if request.user.is_authenticated:
             funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
             if funcionario.loja == loja:
-                produto_serializer = ProdutoSerializer(data=request.data)
+                produto_serializer = ProdutoSerializer(produto, data=request.data)
                 if produto_serializer.is_valid():
-                    produto.name = request.data['name']
-                    produto.valor = request.data['valor']
-                    produto.quantidade = request.data['quantidade']
-                    produto.save()
+                    produto_serializer.save()
                     return Response(request.data, status=status.HTTP_200_OK)
                 else:
                     return Response({'erro': 'HTTP_400_BAD_REQUEST / Json is not valid'},
@@ -263,10 +261,6 @@ class ProdutoCompra(generics.GenericAPIView):
 class VendaLoja(generics.GenericAPIView):
     queryset = Compra.objects.all()
     serializer_class = VendasSerializer
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ['valor_total', 'id', 'cliente__name']
-
-    # filterset_fields = ['name', 'local']
 
     def get(self, request, id_loja, *args, **kwargs):
         try:
@@ -276,7 +270,7 @@ class VendaLoja(generics.GenericAPIView):
 
         if request.user.is_authenticated:
             funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario.loja == loja:
+            if funcionario.loja == loja or request.user.is_staff:
                 vendas = Compra.objects.filter(loja=id_loja)
 
                 page = self.paginate_queryset(vendas)

@@ -14,6 +14,13 @@ class ProdutoSerializer(serializers.ModelSerializer):
         model = Produto
         fields = ('id', 'name', 'quantidade', 'valor')
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.valor = validated_data.get('valor', instance.valor)
+        instance.quantidade = validated_data.get('quantidade', instance.quantidade)
+        instance.save()
+        return instance
+
 
 class AddLojaProdutoSerializer(serializers.ModelSerializer):
     class Meta:
