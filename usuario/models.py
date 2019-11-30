@@ -4,9 +4,6 @@ from django.db import models
 from loja.models import Loja
 
 
-
-
-
 class Funcionario(models.Model):
     name = models.CharField(max_length=250)
     cpf = models.CharField(max_length=30)

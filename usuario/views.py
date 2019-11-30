@@ -1,13 +1,8 @@
-from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, generics
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-
-from loja.models import Cliente
 from loja.serializers import *
-from usuario.models import Funcionario
 from usuario.serializers import *
 from rest_framework import filters
 
@@ -57,19 +52,15 @@ class LojaFuncionariosList(generics.GenericAPIView):
             except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario.loja == loja or request.user.is_staff:
+            if e_funcionario_da_loja(request, loja) or request.user.is_staff:
                 funcionarios = Funcionario.objects.filter(loja=id_loja)
-                # funcionarios_serializer = FuncionarioSerializer(funcionarios, many=True)
 
                 page = self.paginate_queryset(funcionarios)
                 if page is not None:
                     serializer = FuncionarioSerializer(page, many=True)
                     return self.get_paginated_response(serializer.data)
                 serializer = FuncionarioSerializer(funcionarios, many=True)
-
                 return Response(serializer.data)
-                # return Response(funcionarios_serializer.data)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -82,32 +73,26 @@ class LojaFuncionariosList(generics.GenericAPIView):
             except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
-                funcionarios_serializer = AddFuncionarioSerializer(data=request.data)
-                if funcionarios_serializer.is_valid():
-                    name = request.data['name']
-                    cpf = request.data['cpf']
-                    telefone = request.data['telefone']
-                    endereco = request.data['endereco']
-                    cargo = request.data['cargo']
-                    username = request.data['complemento']['username']
-                    password = request.data['complemento']['password']
-                    email = request.data['complemento']['email']
-                    user = User.objects.create_user(username=username,
-                                                    password=password,
-                                                    email=email)
-                    Funcionario.objects.create(name=name,
-                                               cpf=cpf,
-                                               telefone=telefone,
-                                               endereco=endereco,
-                                               cargo=cargo,
-                                               funcionario_complement=user,
-                                               loja=loja)
-                    return Response(request.data, status=status.HTTP_201_CREATED)
+            if e_funcionario_da_loja(request, loja) or request.user.is_staff:
+                if funcionario_e_chefe(request) or request.user.is_staff:
+                    funcionarios_serializer = AddFuncionarioSerializer(data=request.data)
+                    if funcionarios_serializer.is_valid():
+                        name = request.data['name']
+                        cpf = request.data['cpf']
+                        telefone = request.data['telefone']
+                        endereco = request.data['endereco']
+                        cargo = request.data['cargo']
+                        username = request.data['complemento']['username']
+                        password = request.data['complemento']['password']
+                        email = request.data['complemento']['email']
+                        user = User.objects.create_user(username=username, password=password, email=email)
+                        Funcionario.objects.create(name=name, cpf=cpf, telefone=telefone, endereco=endereco, cargo=cargo,
+                                                   funcionario_complement=user, loja=loja)
+                        return Response(request.data, status=status.HTTP_201_CREATED)
+                    else:
+                        return Response({'erro': ' Json not valid'}, status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    return Response({'erro': 'HTTP_400_BAD_REQUEST / Json not valid'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -130,10 +115,12 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
             except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
-                funcionario_serializer = FuncionarioSerializer(funcionario)
-                return Response(funcionario_serializer.data)
+            if e_funcionario_da_loja(request, loja) or request.user.is_staff:
+                if funcionario_e_chefe(request) or request.user.is_staff:
+                    funcionario_serializer = FuncionarioSerializer(funcionario)
+                    return Response(funcionario_serializer.data)
+                else:
+                    return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -151,18 +138,19 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
             except Loja.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            funcionario_serializer = FuncionarioSerializer(data=request.data)
-
-            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
-                if funcionario_serializer.is_valid():
-                    funcionario.name = request.data['name']
-                    funcionario.cargo = request.data['cargo']
-                    funcionario.endereco = request.data['endereco']
-                    funcionario.telefone = request.data['telefone']
-                    funcionario.cpf = request.data['cpf']
-                    funcionario.save()
-                    return Response(request.data, status=status.HTTP_200_OK)
+            if e_funcionario_da_loja(request, loja) or request.user.is_staff:
+                if funcionario_e_chefe(request) or request.user.is_staff:
+                    funcionario_serializer = FuncionarioSerializer(data=request.data)
+                    if funcionario_serializer.is_valid():
+                        funcionario.name = request.data['name']
+                        funcionario.cargo = request.data['cargo']
+                        funcionario.endereco = request.data['endereco']
+                        funcionario.telefone = request.data['telefone']
+                        funcionario.cpf = request.data['cpf']
+                        funcionario.save()
+                        return Response(request.data, status=status.HTTP_200_OK)
+                    else:
+                        return Response({'erro': 'Json not valid'}, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
@@ -182,12 +170,13 @@ class LojaFuncionarioDetalhes(generics.GenericAPIView):
             except Funcionario.DoesNotExist:
                 return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
 
-            loja = Loja.objects.get(id=id_loja)
-            funcionario_logado = Funcionario.objects.get(funcionario_complement=request.user.id)
-            if funcionario_logado.loja == loja and funcionario_logado.cargo == 'Chefe' or request.user.is_staff:
-                funcionario_user = User.objects.get(id=funcionario.funcionario_complement.id)
-                funcionario_user.delete()
-                return Response({'Info': 'Item has be deleted'}, status=status.HTTP_204_NO_CONTENT)
+            if e_funcionario_da_loja(request, loja) or request.user.is_staff:
+                if funcionario_e_chefe(request) or request.user.is_staff:
+                    funcionario_user = User.objects.get(id=funcionario.funcionario_complement.id)
+                    funcionario_user.delete()
+                    return Response({'Info': 'Item has be deleted'}, status=status.HTTP_204_NO_CONTENT)
+                else:
+                    return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 return Response({'erro': 'HTTP_401_UNAUTHORIZED'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
@@ -236,6 +225,22 @@ class ClienteDetalhes(generics.GenericAPIView):
             return Response(clientes_serializer.data)
         else:
             return Response({'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+def e_funcionario_da_loja(request, loja):
+    if not request.user.is_staff:
+        funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
+        if funcionario.loja == loja:
+            return True
+    return False
+
+
+def funcionario_e_chefe(request):
+    if not request.user.is_staff:
+        funcionario = Funcionario.objects.get(funcionario_complement=request.user.id)
+        if funcionario.cargo == 'Chefe':
+            return True
+    return False
 
 
 class ApiRoot(generics.GenericAPIView):
