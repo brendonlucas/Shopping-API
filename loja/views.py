@@ -195,35 +195,36 @@ class ProdutoCompra(generics.GenericAPIView):
     serializer_class = AddCompraSerializer
 
     def post(self, request, id_loja, id_produto, *args, **kwargs):
-        try:
-            loja = Loja.objects.get(id=id_loja)
-            produtos = Produto.objects.filter(loja=id_loja)
-            if id_produto <= len(produtos):
-                produto = produtos[id_produto - 1]
-            else:
-                return Response({'erro': '404_NOT_FOUND'}, status=status.HTTP_404_NOT_FOUND)
-        except Loja.DoesNotExist:
-            return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
-        if request.user.is_authenticated and e_funcionario_da_loja(request, loja):
-            dados_serializer = VerifyCompraSerializer(data=request.data)
-            if dados_serializer.is_valid():
-                try:
-                    cliente = Cliente.objects.get(cpf=request.data['cliente']['cpf'])
-                    if cliente.name != request.data['cliente']['name']:
-                        return Response({'erro': "Name Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
-                except Cliente.DoesNotExist:
-                    return Response({'erro': " Cliente inexistente"}, status=status.HTTP_404_NOT_FOUND)
-                if request.data['quantidade'] <= produto.quantidade:
-                    valor_total = produto.valor * request.data['quantidade']
-                    produto.quantidade = produto.quantidade - request.data['quantidade']
-                    produto.save()
-                    compra = Compra(cliente=cliente, produto=Produto.objects.get(id=produto.id), loja=loja,
-                                    quantidade=request.data['quantidade'], valor_total=valor_total)
-                    compra.save()
-                    compra_serializer = AddCompraSerializer(compra)
-                    return Response(compra_serializer.data, status=status.HTTP_201_CREATED)
+        if request.user.is_authenticated:
+            try:
+                loja = Loja.objects.get(id=id_loja)
+                produtos = Produto.objects.filter(loja=id_loja)
+                if id_produto <= len(produtos):
+                    produto = produtos[id_produto - 1]
                 else:
-                    return Response({'erro': 'Quantidade superior que estoque'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'erro': '404_NOT_FOUND'}, status=status.HTTP_404_NOT_FOUND)
+            except Loja.DoesNotExist:
+                return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+            if e_funcionario_da_loja(request, loja):
+                dados_serializer = VerifyCompraSerializer(data=request.data)
+                if dados_serializer.is_valid():
+                    try:
+                        cliente = Cliente.objects.get(cpf=request.data['cliente']['cpf'])
+                        if cliente.name != request.data['cliente']['name']:
+                            return Response({'erro': "Name Cliente HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
+                    except Cliente.DoesNotExist:
+                        return Response({'erro': " Cliente inexistente"}, status=status.HTTP_404_NOT_FOUND)
+                    if request.data['quantidade'] <= produto.quantidade:
+                        valor_total = produto.valor * request.data['quantidade']
+                        produto.quantidade = produto.quantidade - request.data['quantidade']
+                        produto.save()
+                        compra = Compra(cliente=cliente, produto=Produto.objects.get(id=produto.id), loja=loja,
+                                        quantidade=request.data['quantidade'], valor_total=valor_total)
+                        compra.save()
+                        compra_serializer = AddCompraSerializer(compra)
+                        return Response(compra_serializer.data, status=status.HTTP_201_CREATED)
+                    else:
+                        return Response({'erro': 'Quantidade superior que estoque'}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -235,11 +236,11 @@ class VendaLoja(generics.GenericAPIView):
     serializer_class = VendasSerializer
 
     def get(self, request, id_loja, *args, **kwargs):
-        try:
-            loja = Loja.objects.get(id=id_loja)
-        except Loja.DoesNotExist:
-            return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
         if request.user.is_authenticated:
+            try:
+                loja = Loja.objects.get(id=id_loja)
+            except Loja.DoesNotExist:
+                return Response({'erro': "HTTP_404_NOT_FOUND"}, status=status.HTTP_404_NOT_FOUND)
             if e_funcionario_da_loja(request, loja) or request.user.is_staff:
                 vendas = Compra.objects.filter(loja=id_loja)
                 page = self.paginate_queryset(vendas)
